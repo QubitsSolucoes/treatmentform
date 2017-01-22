@@ -7,10 +7,10 @@ uses
   Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Vcl.Grids, Vcl.DBGrids, Data.DB, Math,
 
   System.Types, Vcl.Graphics, Vcl.ExtCtrls,
-  Vcl.StdCtrls, Vcl.Mask, DateUtils,
+  Vcl.StdCtrls, Vcl.Mask, DateUtils;
 
   //ZEOS
-  ZDataSet, ZAbstractDataset, ZAbstractRODataSet;
+  //ZDataSet, ZAbstractDataset, ZAbstractRODataSet;
 
 type
   TCharSet = set of AnsiChar;
@@ -53,7 +53,7 @@ type
     FColorDataCell : TColor;
     procedure SetColorDataCell(const Value: TColor);
   protected
-    procedure TitleClick(Column : TColumn);override;
+    //procedure TitleClick(Column : TColumn);override;
     procedure DrawDataCell(const Rect: TRect; Field: TField; State: TGridDrawState); override;
   published
     procedure AjustColumns;
@@ -257,53 +257,53 @@ begin
   FColorDataCell := Value;
 end;
 
-procedure TDBGrid.TitleClick(Column: TColumn);
-{$J+}
- const PreviousColumnIndex : integer = -1;
-{$J-}
-var
-  ATitleCaption : string;
-begin
-  if DataSource.DataSet is TZQuery then
-  begin
-    ATitleCaption := '';
-
-    if PreviousColumnIndex <> -1 then
-    begin
-      Columns[PreviousColumnIndex].title.Font.Style :=
-        Columns[PreviousColumnIndex].title.Font.Style - [fsBold];
-
-      ATitleCaption := trim(StringReplace(Columns[PreviousColumnIndex].title.Caption, '▼', '', [rfReplaceAll]));
-      ATitleCaption := trim(StringReplace(ATitleCaption, '▲', '', [rfReplaceAll]));
-      Columns[PreviousColumnIndex].title.Caption := ATitleCaption;
-    end;
-
-    Column.title.Font.Style :=
-      Column.title.Font.Style + [fsBold];
-    PreviousColumnIndex := Column.Index;
-
-    ATitleCaption := trim(StringReplace(Column.Title.Caption, '▼', '', [rfReplaceAll]));
-    ATitleCaption := trim(StringReplace(ATitleCaption, '▲', '', [rfReplaceAll]));
-    Column.Title.Caption := ATitleCaption;
-
-    Column.Width := Column.Width - 20;
-
-    if (TZQuery(DataSource.DataSet).SortType = stAscending) then
-    begin
-      TZQuery(DataSource.DataSet).SortedFields := Column.Field.FieldName + ' DESC';
-      TZQuery(DataSource.DataSet).SortType := stDescending;
-      Column.Title.Caption := ATitleCaption+' ▼';
-      Column.Width := Column.Width + 20;
-    end
-    else
-    begin
-      TZQuery(DataSource.DataSet).SortedFields := Column.Field.FieldName + ' ASC';
-      TZQuery(DataSource.DataSet).SortType := stAscending;
-      Column.Title.Caption := ATitleCaption+' ▲';
-      Column.Width := Column.Width + 20;
-    end;
-  end;
-end;
+//procedure TDBGrid.TitleClick(Column: TColumn);
+//{$J+}
+// const PreviousColumnIndex : integer = -1;
+//{$J-}
+//var
+//  ATitleCaption : string;
+//begin
+//  if DataSource.DataSet is TZQuery then
+//  begin
+//    ATitleCaption := '';
+//
+//    if PreviousColumnIndex <> -1 then
+//    begin
+//      Columns[PreviousColumnIndex].title.Font.Style :=
+//        Columns[PreviousColumnIndex].title.Font.Style - [fsBold];
+//
+//      ATitleCaption := trim(StringReplace(Columns[PreviousColumnIndex].title.Caption, '▼', '', [rfReplaceAll]));
+//      ATitleCaption := trim(StringReplace(ATitleCaption, '▲', '', [rfReplaceAll]));
+//      Columns[PreviousColumnIndex].title.Caption := ATitleCaption;
+//    end;
+//
+//    Column.title.Font.Style :=
+//      Column.title.Font.Style + [fsBold];
+//    PreviousColumnIndex := Column.Index;
+//
+//    ATitleCaption := trim(StringReplace(Column.Title.Caption, '▼', '', [rfReplaceAll]));
+//    ATitleCaption := trim(StringReplace(ATitleCaption, '▲', '', [rfReplaceAll]));
+//    Column.Title.Caption := ATitleCaption;
+//
+//    Column.Width := Column.Width - 20;
+//
+//    if (TZQuery(DataSource.DataSet).SortType = stAscending) then
+//    begin
+//      TZQuery(DataSource.DataSet).SortedFields := Column.Field.FieldName + ' DESC';
+//      TZQuery(DataSource.DataSet).SortType := stDescending;
+//      Column.Title.Caption := ATitleCaption+' ▼';
+//      Column.Width := Column.Width + 20;
+//    end
+//    else
+//    begin
+//      TZQuery(DataSource.DataSet).SortedFields := Column.Field.FieldName + ' ASC';
+//      TZQuery(DataSource.DataSet).SortType := stAscending;
+//      Column.Title.Caption := ATitleCaption+' ▲';
+//      Column.Width := Column.Width + 20;
+//    end;
+//  end;
+//end;
 
 procedure TDBGrid.AjustColumns;
 var

@@ -29,7 +29,6 @@ type
     lbStatus: TLabel;
     procedure Button1Click(Sender: TObject);
     procedure FormShow(Sender: TObject);
-    procedure LabeledEdit4Exit(Sender: TObject);
   protected
   private
     { Private declarations }
@@ -49,6 +48,7 @@ var
   ListIgnora : TStringList;
 begin
   ListIgnora := TStringList.Create;
+  //retirando componente do tratamento geral.
   ListIgnora.Add(LabeledEdit4.Name);
 
   if StartTreatment(ListIgnora) then
@@ -62,15 +62,8 @@ end;
 procedure TfUseMode.FormShow(Sender: TObject);
 begin
   inherited;
+  //Tratando taborder do fomulário inteiro.
   TreatTabOrder;
-end;
-
-procedure TfUseMode.LabeledEdit4Exit(Sender: TObject);
-begin
-  if LabeledEdit4.IsDate then
-    ShowMessage('é data!')
-  else
-    ShowMessage('não é data!');
 end;
 
 end.
