@@ -1,47 +1,51 @@
-﻿unit UBaseForm;
+﻿/////////////////////////////////////////////////////////
+//                                                     //
+//         Classe desenvolvida em Delphi 10.1 Berlin   //
+//   com o intuito de ajudar o programador a tratar    //
+//   formulários sem que tenha muito trabalho, e dei-  //
+//   xar o seu código mais limpo.                      //
+//                                                     //
+//        Nesta Classe tem contida funções de ajuda    //
+//   desenvolvidas por mim e ainda em desenvolvimen-   //
+//   to, assim como desenvolvida por terceiros.        //
+//                                                     //
+//        Em caso de melhorias na classe por favor me  //
+//   comuniquem pelo e-mail "ramonrxc@gmail.com" ou    //
+//   pelo skype ramon.ruan2.                           //
+//                                                     //
+//        Classe desenvolvida por Ramon Ruan.          //
+//                                                     //
+/////////////////////////////////////////////////////////
+
+unit RRClass;
 
 interface
 
 uses
   Winapi.Messages, Windows, System.SysUtils, System.Variants, System.Classes,
   Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Vcl.Grids, Vcl.DBGrids, Data.DB, Math,
-
-  System.Types, Vcl.Graphics, Vcl.ExtCtrls,
-  Vcl.StdCtrls, Vcl.Mask, DateUtils;
-
-  //ZEOS
-  //ZDataSet, ZAbstractDataset, ZAbstractRODataSet;
+  System.Types, Vcl.Graphics, Vcl.ExtCtrls, Vcl.StdCtrls, Vcl.Mask, DateUtils,
+  Datasnap.DBClient, System.Generics.Collections;
 
 type
   TCharSet = set of AnsiChar;
+  TTreatFormType = (ttDefault, ttPaintControlInOne, ttPaintControlInAll, ttBalloonTipInOne, ttBalloonTipInAll);
 
 type
-  TEditBalloonTip = packed record
-    cbStruct: DWORD ;
-    pszTitle: LPCWSTR ;
-    pszText: LPCWSTR;
-    ttiIcon: Integer;
-  public
-    const
-      ECM_FIRST = $1500;
-      EM_SHOWBALLOONTIP = (ECM_FIRST + 3);
-      EM_HIDEBALLOONTIP = (ECM_FIRST + 4);
-      TTI_NONE = 0;
-      TTI_INFO = 1;
-      TTI_WARNING = 2;
-      TTI_ERROR = 3;
-    procedure ShowBalloonTip(Window : HWnd; Texto, Titulo : PWideChar; Tipo : Integer);
-    procedure HideBalloonTip(Window : HWnd);
+  TfObject = class(TForm)
   private
-  end;
-
-type
-  TFormHelper = class helper for TForm
-  private
-    procedure TreatTabOrder(const Parent: TWinControl); overload;
+    var
+      FadeIn: TTimer;
+      FadeOut: TTimer;
+    procedure FadeInTimer(Sender : TObject);
+    procedure FadeOutTimer(Sender : TObject);
+    procedure FormShow(Sender : TObject);
+    procedure FormKeyDown(Sender: TObject; var Key: Word; Shift: TShiftState);
+    procedure FormClose(Sender: TObject; var Action: TCloseAction);
   public
-    function StartTreatment(const IgnoreList : TStringList = nil) : boolean;
-    procedure TreatTabOrder; overload;
+    constructor Create(AOwner : TComponent); override;
+    destructor Destroy; override;
+    { Public declarations }
   end;
 
 type
@@ -53,11 +57,27 @@ type
     FColorDataCell : TColor;
     procedure SetColorDataCell(const Value: TColor);
   protected
-    //procedure TitleClick(Column : TColumn);override;
+//    procedure TitleClick(Column : TColumn);override;
     procedure DrawDataCell(const Rect: TRect; Field: TField; State: TGridDrawState); override;
   published
-    procedure AjustColumns;
     property ColorDataCell : TColor read FColorDataCell write SetColorDataCell;
+  end;
+
+type
+  TFunctions = class
+  private
+    function ProximoDiaUtil(dData: TDate): String;
+  protected
+    function VersaoExe : string;
+  end;
+
+type
+  TFormHelper = class helper for TForm
+  private
+    procedure TreatTabOrder(const Parent: TWinControl); overload;
+  public
+    function StartTreatment(const IgnoreList : TStringList = nil; const TreatFormType : TTreatFormType = ttDefault) : boolean;
+    procedure TreatTabOrder; overload;
   end;
 
 type
@@ -87,33 +107,140 @@ type
     function SetMaskPhone : string;
   end;
 
-type
-  TfBaseForm = class(TForm)
-    FadeIn: TTimer;
-    FadeOut: TTimer;
-    procedure FadeInTimer(Sender: TObject);
-    procedure FadeOutTimer(Sender: TObject);
-    procedure FormKeyDown(Sender: TObject; var Key: Word; Shift: TShiftState);
-    procedure FormClose(Sender: TObject; var Action: TCloseAction);
-    procedure FormShow(Sender: TObject);
-  protected
-    function VersaoExe : string;
-  private
-    { Private declarations }
-  public
-    { Public declarations }
-  end;
-
 var
-  fBaseForm: TfBaseForm;
-  fBallonTip : TEditBalloonTip;
+  fFunctions : TFunctions;
 
-  Function ProximoDiaUtil(dData : TDate) : String;
 implementation
 
-{$R *.dfm}
+uses UTips;
 
-Function ProximoDiaUtil(dData : TDate) : String;
+{ TDBGrid }
+
+procedure TDBGrid.DrawDataCell(const Rect: TRect; Field: TField;
+  State: TGridDrawState);
+begin
+  if DataSource.DataSet.Active then
+  begin
+    if DataSource.DataSet.RecordCount > 0 then
+    begin
+      if not odd(DataSource.DataSet.RecNo) then // zebra
+      begin
+        if not (gdSelected in State) then
+        begin
+          Canvas.Brush.Color := FColorDataCell;
+          Canvas.FillRect(Rect);
+          DefaultDrawDataCell(Rect, Field, State);
+        end;
+      end;
+    end;
+  end;
+end;
+
+procedure TDBGrid.SetColorDataCell(const Value: TColor);
+begin
+  FColorDataCell := Value;
+  Repaint;
+end;
+
+//procedure TDBGrid.TitleClick(Column: TColumn);
+//{$J+}
+// const PreviousColumnIndex : integer = -1;
+//{$J-}
+//var
+//  ATitleCaption : string;
+//begin
+//  if (DataSource.DataSet is TZQuery) then
+//  //if(DataSource.DataSet is TFDQuery) then
+//  begin
+//    ATitleCaption := '';
+//
+//    if PreviousColumnIndex <> -1 then
+//    begin
+//      Columns[PreviousColumnIndex].title.Font.Style :=
+//        Columns[PreviousColumnIndex].title.Font.Style - [fsBold];
+//
+//      ATitleCaption := trim(StringReplace(Columns[PreviousColumnIndex].title.Caption, '▼', '', [rfReplaceAll]));
+//      ATitleCaption := trim(StringReplace(ATitleCaption, '▲', '', [rfReplaceAll]));
+//      Columns[PreviousColumnIndex].title.Caption := ATitleCaption;
+//    end;
+//
+//    Column.title.Font.Style :=
+//      Column.title.Font.Style + [fsBold];
+//    PreviousColumnIndex := Column.Index;
+//
+//    ATitleCaption := trim(StringReplace(Column.Title.Caption, '▼', '', [rfReplaceAll]));
+//    ATitleCaption := trim(StringReplace(ATitleCaption, '▲', '', [rfReplaceAll]));
+//    Column.Title.Caption := ATitleCaption;
+//
+//    Column.Width := Column.Width - 20;
+//
+//    if (TZQuery(DataSource.DataSet).SortType = stAscending) then
+//    //if (TFDQuery(DataSource.DataSet).IndexFieldNames.Contains(' ASC')) then
+//    begin
+//      TZQuery(DataSource.DataSet).SortedFields := Column.Field.FieldName + ' DESC';
+//      TZQuery(DataSource.DataSet).SortType := stDescending;
+//
+//     // TFDQuery(DataSource.DataSet).IndexFieldNames := Column.FieldName + ' DESC';
+//
+//      Column.Title.Caption := ATitleCaption+' ▼';
+//      Column.Width := Column.Width + 20;
+//    end
+//    else
+//    begin
+//      TZQuery(DataSource.DataSet).SortedFields := Column.Field.FieldName + ' ASC';
+//      TZQuery(DataSource.DataSet).SortType := stAscending;
+////      TFDQuery(DataSource.DataSet).IndexFieldNames := Column.FieldName + ' DESC';
+//
+//      Column.Title.Caption := ATitleCaption+' ▲';
+//      Column.Width := Column.Width + 20;
+//    end;
+//  end;
+//end;
+
+constructor TDBGrid.Create(AOwner: TComponent);
+begin
+  FColorDataCell := $00FFEFDF;
+  inherited;
+  ReadOnly := True;
+  Options := Options - [dgEditing, dgIndicator, dgRowLines];
+end;
+
+destructor TDBGrid.Destroy;
+begin
+  inherited;
+end;
+
+{ TFunctions }
+
+function TFunctions.VersaoExe: string;
+var
+  VerInfoSize: DWORD;
+  VerInfo: Pointer;
+  VerValueSize: DWORD;
+  VerValue: PVSFixedFileInfo;
+  Dummy: DWORD;
+  V1, V2, V3, V4: Word;
+  Prog : string;
+  I: Integer;
+begin
+  Prog := Application.ExeName;
+  VerInfoSize := GetFileVersionInfoSize(PChar(prog), Dummy);
+
+  GetMem(VerInfo, VerInfoSize);
+  GetFileVersionInfo(PChar(prog), 0, VerInfoSize, VerInfo);
+  VerQueryValue(VerInfo, '\', Pointer(VerValue), VerValueSize);
+  with VerValue^ do
+  begin
+    V1 := dwFileVersionMS shr 16;
+    V2 := dwFileVersionMS and $FFFF;
+    V3 := dwFileVersionLS shr 16;
+    V4 := dwFileVersionLS and $FFFF;
+  end;
+  FreeMem(VerInfo, VerInfoSize);
+  result := inttostr(v1) + '.' + inttostr(v2) + '.' + inttostr(v3) + '.' + inttostr(v4);
+end;
+
+Function TFunctions.ProximoDiaUtil(dData : TDate) : String;
   function IsFeriado(data: TDate): Boolean;
     function CalculaPascoa(AAno: Word): TDateTime;
     var
@@ -230,153 +357,22 @@ begin
   Result := DateToStr(dData);
 end;
 
-{ TDBGrid }
-
-procedure TDBGrid.DrawDataCell(const Rect: TRect; Field: TField;
-  State: TGridDrawState);
-begin
-  if DataSource.DataSet.Active then
-  begin
-    if DataSource.DataSet.RecordCount > 0 then
-    begin
-      if not odd(DataSource.DataSet.RecNo) then // zebra
-      begin
-        if not (gdSelected in State) then
-        begin
-          Canvas.Brush.Color := FColorDataCell;
-          Canvas.FillRect(Rect);
-          DefaultDrawDataCell(Rect, Field, State);
-        end;
-      end;
-    end;
-  end;
-end;
-
-procedure TDBGrid.SetColorDataCell(const Value: TColor);
-begin
-  FColorDataCell := Value;
-end;
-
-//procedure TDBGrid.TitleClick(Column: TColumn);
-//{$J+}
-// const PreviousColumnIndex : integer = -1;
-//{$J-}
-//var
-//  ATitleCaption : string;
-//begin
-//  if DataSource.DataSet is TZQuery then
-//  begin
-//    ATitleCaption := '';
-//
-//    if PreviousColumnIndex <> -1 then
-//    begin
-//      Columns[PreviousColumnIndex].title.Font.Style :=
-//        Columns[PreviousColumnIndex].title.Font.Style - [fsBold];
-//
-//      ATitleCaption := trim(StringReplace(Columns[PreviousColumnIndex].title.Caption, '▼', '', [rfReplaceAll]));
-//      ATitleCaption := trim(StringReplace(ATitleCaption, '▲', '', [rfReplaceAll]));
-//      Columns[PreviousColumnIndex].title.Caption := ATitleCaption;
-//    end;
-//
-//    Column.title.Font.Style :=
-//      Column.title.Font.Style + [fsBold];
-//    PreviousColumnIndex := Column.Index;
-//
-//    ATitleCaption := trim(StringReplace(Column.Title.Caption, '▼', '', [rfReplaceAll]));
-//    ATitleCaption := trim(StringReplace(ATitleCaption, '▲', '', [rfReplaceAll]));
-//    Column.Title.Caption := ATitleCaption;
-//
-//    Column.Width := Column.Width - 20;
-//
-//    if (TZQuery(DataSource.DataSet).SortType = stAscending) then
-//    begin
-//      TZQuery(DataSource.DataSet).SortedFields := Column.Field.FieldName + ' DESC';
-//      TZQuery(DataSource.DataSet).SortType := stDescending;
-//      Column.Title.Caption := ATitleCaption+' ▼';
-//      Column.Width := Column.Width + 20;
-//    end
-//    else
-//    begin
-//      TZQuery(DataSource.DataSet).SortedFields := Column.Field.FieldName + ' ASC';
-//      TZQuery(DataSource.DataSet).SortType := stAscending;
-//      Column.Title.Caption := ATitleCaption+' ▲';
-//      Column.Width := Column.Width + 20;
-//    end;
-//  end;
-//end;
-
-procedure TDBGrid.AjustColumns;
-var
-  ColumnCount, RowCount : integer;
-  DataSetTemp : TDataSet;
-  DataSourceTemp : TDataSource;
-  contCol, contRow : integer;
-  AValue : integer;
-  MStrValue, AStrValue : string;
-begin
-  ColumnCount := Columns.Count;
-
-  if (ColumnCount = 0) then Exit;
-  if not DataSource.DataSet.Active  then Exit;
-
-  DataSetTemp := DataSource.DataSet;
-  DataSourceTemp := DataSource;
-  //DataSource := nil;
-  RowCount := DataSetTemp.RecordCount;
-
-  for contCol := 0 to ColumnCount-1 do
-  begin
-    AValue := 0;
-    AStrValue := '';
-
-    DataSetTemp.First;
-    MStrValue := Columns[contCol].Title.Caption;//DataSetTemp.FieldByName(DBGrid.Columns[contCol].FieldName).AsString;
-    while not DataSetTemp.Eof do
-    begin
-      AValue := Length(DataSetTemp.FieldByName(Columns[contCol].FieldName).AsString);
-      AStrValue := DataSetTemp.FieldByName(Columns[contCol].FieldName).AsString;
-      DataSetTemp.Next;
-
-      if length(MStrValue) < AValue then
-        MStrValue := AStrValue;
-    end;
-
-    Columns[contCol].Width := Canvas.TextWidth(MStrValue)+15;
-  end;
-
-  DataSource := DataSourceTemp;
-end;
-
-constructor TDBGrid.Create(AOwner: TComponent);
-begin
-  ColorDataCell := $00FFEFDF;
-  inherited;
-  ReadOnly := True;
-  Options := Options - [dgEditing, dgIndicator, dgRowLines];
-end;
-
-destructor TDBGrid.Destroy;
-begin
-  inherited;
-end;
-
 {TfBaseForm}
 
-
-procedure TfBaseForm.FadeInTimer(Sender: TObject);
+procedure TfObject.FadeInTimer(Sender : TObject);
 begin
   AlphaBlendValue := AlphaBlendValue + 15;
   FadeIn.Enabled := not (AlphaBlendValue >= 255);
 end;
 
-procedure TfBaseForm.FadeOutTimer(Sender: TObject);
+procedure TfObject.FadeOutTimer(Sender : TObject);
 begin
   AlphaBlendValue := AlphaBlendValue - 15;
   if AlphaBlendValue <= 0 then
     Close;
 end;
 
-procedure TfBaseForm.FormClose(Sender: TObject; var Action: TCloseAction);
+procedure TfObject.FormClose(Sender: TObject; var Action: TCloseAction);
 begin
   while AlphaBlendValue <> 0 do
   begin
@@ -385,47 +381,53 @@ begin
   end;
 end;
 
-procedure TfBaseForm.FormKeyDown(Sender: TObject; var Key: Word;
+constructor TfObject.Create(AOwner : TComponent);
+begin
+  inherited Create(AOwner);
+
+  Position := TPosition.poScreenCenter;
+  WindowState := wsNormal;
+  KeyPreview := true;
+  AlphaBlend := true;
+  AlphaBlendValue := 0;
+  BorderStyle := bsSizeable;
+
+  FadeIn := TTimer.Create(nil);
+  FadeOut := TTimer.Create(nil);
+
+  FadeIn.Interval := 10;
+  FadeOut.Interval := 10;
+  FadeIn.Enabled := false;
+  FadeOut.Enabled := false;
+
+  OnShow := FormShow;
+  OnKeyDown := FormKeyDown;
+  OnClose := FormClose;
+  FadeIn.OnTimer := FadeInTimer;
+  FadeOut.OnTimer := FadeOutTimer;
+end;
+
+destructor TfObject.Destroy;
+begin
+  FreeAndNil(FadeIn);
+  FreeAndNil(FadeOut);
+
+  inherited Destroy;
+end;
+
+procedure TfObject.FormKeyDown(Sender: TObject; var Key: Word;
   Shift: TShiftState);
 begin
   case key of
-    VK_ESCAPE : Close;//FadeOut.Enabled := true;
+    VK_ESCAPE : Close;
     VK_RETURN : perform(WM_NEXTDLGCTL,0,0);
   end;
 end;
 
-procedure TfBaseForm.FormShow(Sender: TObject);
+procedure TfObject.FormShow(Sender: TObject);
 begin
-  FadeIn.Enabled := True;
-end;
-
-
-function TfBaseForm.VersaoExe: string;
-var
-  VerInfoSize: DWORD;
-  VerInfo: Pointer;
-  VerValueSize: DWORD;
-  VerValue: PVSFixedFileInfo;
-  Dummy: DWORD;
-  V1, V2, V3, V4: Word;
-  Prog : string;
-  I: Integer;
-begin
-  Prog := Application.ExeName;
-  VerInfoSize := GetFileVersionInfoSize(PChar(prog), Dummy);
-
-  GetMem(VerInfo, VerInfoSize);
-  GetFileVersionInfo(PChar(prog), 0, VerInfoSize, VerInfo);
-  VerQueryValue(VerInfo, '\', Pointer(VerValue), VerValueSize);
-  with VerValue^ do
-  begin
-    V1 := dwFileVersionMS shr 16;
-    V2 := dwFileVersionMS and $FFFF;
-    V3 := dwFileVersionLS shr 16;
-    V4 := dwFileVersionLS and $FFFF;
-  end;
-  FreeMem(VerInfo, VerInfoSize);
-  result := inttostr(v1) + '.' + inttostr(v2) + '.' + inttostr(v3) + '.' + inttostr(v4);
+  TreatTabOrder;
+  FadeIn.Enabled := true;
 end;
 
 { TCustomEditHelper }
@@ -583,7 +585,6 @@ begin
   except
     Result := False;
     Clear;
-    SetFocus;
   end;
 end;
 
@@ -804,27 +805,9 @@ begin
   end;
 end;
 
-{ TEditBalloonTip }
-
-procedure TEditBalloonTip.ShowBalloonTip(Window : HWnd; Texto, Titulo : PWideChar; Tipo : Integer);
-var
-  EditBalloonTip : TEditBalloonTip;
-begin
-  EditBalloonTip.cbStruct := SizeOf(TEditBalloonTip);
-  EditBalloonTip.pszText := Texto;
-  EditBalloonTip.pszTitle := Titulo;
-  EditBalloonTip.ttiIcon := Tipo;
-  SendMessageW(Window, EM_SHOWBALLOONTIP, 0, Integer(@EditBalloonTip));
-end;
-
-procedure TEditBalloonTip.HideBalloonTip(Window : HWnd);
-begin
-  SendMessageW(Window, EM_HIDEBALLOONTIP, 0, 0);
-end;
-
 { TForm }
 
-function TFormHelper.StartTreatment(const IgnoreList : TStringList = nil): boolean;
+function TFormHelper.StartTreatment(const IgnoreList : TStringList = nil; const TreatFormType : TTreatFormType = ttDefault): boolean;
   function VerificaNome(Nome : string; IgnoreList : TStringList) : Boolean;
   var
     i : integer;
@@ -858,7 +841,8 @@ begin
     for i := 0 to List.Count - 1 do
     begin
       //TRATAMENTO PARA VERIFICAÇÃO DOS COMPONENTES QUE SERÃO IGNORADOS
-      if not VerificaNome(Components[TWinControl(List[i]).ComponentIndex].Name, IgnoreList) then
+      if (not VerificaNome(Components[TWinControl(List[i]).ComponentIndex].Name, IgnoreList))
+      and (not (Components[TWinControl(List[i]).ComponentIndex] is TLabel)) then
       begin
         //verifica se o componente da vez está habilitado
         if (Components[TWinControl(List[i]).ComponentIndex] as TWinControl).Enabled then
@@ -876,9 +860,20 @@ begin
                 if not ((Components[TWinControl(List[i]).ComponentIndex] as TEdit).IsEmail) then
                 begin
                   //VERIFICA A PARTIR DA FUNÇÃO ACIMA - E MOSTRA O BALÃO NO CAMPO INDICADO.
-                  fBallonTip.ShowBalloonTip((Components[TWinControl(List[i]).ComponentIndex] as TEdit).Handle, 'Por favor, preencha um E-mail válido.', 'E-mail Inválido!', fBallonTip.TTI_WARNING);
+                  if (TreatFormType = ttDefault) or
+                     (TreatFormType = ttBalloonTipInOne) or
+                     (TreatFormType = ttBalloonTipInAll) then
+                    (Components[TWinControl(List[i]).ComponentIndex] as TWinControl).ShowBalloonTip(TIconKind.Warning, 'Por favor, preencha um E-mail válido.', 'E-mail Inválido!')
+                  else if (TreatFormType = ttPaintControlInOne) or
+                          (TreatFormType = ttPaintControlInAll) then
+                    (Components[TWinControl(List[i]).ComponentIndex] as TWinControl).SetBorder(clRed);
+
                   Result := False;
-                  Exit;
+
+                  if (TreatFormType = ttDefault) or
+                     (TreatFormType = ttBalloonTipInOne) or
+                     (TreatFormType = ttPaintControlInOne) then
+                    Exit;
                 end
                 else
                   result := true;
@@ -888,9 +883,21 @@ begin
                 if trim((Components[TWinControl(List[i]).ComponentIndex] as TEdit).Text) = '' then
                 begin
                   //VERIFICA A PARTIR DA FUNÇÃO ACIMA - E MOSTRA O BALÃO NO CAMPO INDICADO.
-                  fBallonTip.ShowBalloonTip((Components[TWinControl(List[i]).ComponentIndex] as TEdit).Handle, 'Por favor, preencha este campo.', 'Campo obrigatório', fBallonTip.TTI_WARNING);
+
+                  if (TreatFormType = ttDefault) or
+                     (TreatFormType = ttBalloonTipInOne) or
+                     (TreatFormType = ttBalloonTipInAll) then
+                    (Components[TWinControl(List[i]).ComponentIndex] as TWinControl).ShowBalloonTip(TIconKind.Warning, 'Por favor, preencha este campo.', 'Campo obrigatório')
+                  else if (TreatFormType = ttPaintControlInOne) or
+                          (TreatFormType = ttPaintControlInAll) then
+                    (Components[TWinControl(List[i]).ComponentIndex] as TWinControl).SetBorder(clRed);
+
                   Result := False;
-                  Exit;
+
+                  if (TreatFormType = ttDefault) or
+                     (TreatFormType = ttBalloonTipInOne) or
+                     (TreatFormType = ttPaintControlInOne) then
+                    Exit;
                 end
                 else
                   Result := true;
@@ -901,9 +908,20 @@ begin
             begin
               if trim((Components[TWinControl(List[i]).ComponentIndex] as TLabeledEdit).Text) = '' then
               begin
-                fBallonTip.ShowBalloonTip((Components[TWinControl(List[i]).ComponentIndex] as TLabeledEdit).Handle, 'Por favor, preencha este campo.', 'Campo obrigatório', fBallonTip.TTI_WARNING);
+                if (TreatFormType = ttDefault) or
+                   (TreatFormType = ttBalloonTipInOne) or
+                   (TreatFormType = ttBalloonTipInAll) then
+                  (Components[TWinControl(List[i]).ComponentIndex] as TWinControl).ShowBalloonTip(TIconKind.Warning, 'Por favor, preencha este campo.', 'Campo obrigatório')
+                else if (TreatFormType = ttPaintControlInOne) or
+                        (TreatFormType = ttPaintControlInAll) then
+                  (Components[TWinControl(List[i]).ComponentIndex] as TWinControl).SetBorder(clRed);
+
                 Result := False;
-                Exit;
+
+                if (TreatFormType = ttDefault) or
+                   (TreatFormType = ttBalloonTipInOne) or
+                   (TreatFormType = ttPaintControlInOne) then
+                  Exit;
               end
               else
                 result := true;
@@ -916,15 +934,37 @@ begin
               begin
                 if trim((Components[TWinControl(List[i]).ComponentIndex] as TMaskEdit).Text) = '  /  /  ' then
                 begin
-                  fBallonTip.ShowBalloonTip((Components[TWinControl(List[i]).ComponentIndex] as TMaskEdit).Handle, 'Por favor, preencha esta Data!', 'Campo obrigatório', fBallonTip.TTI_WARNING);
+                  if (TreatFormType = ttDefault) or
+                     (TreatFormType = ttBalloonTipInOne) or
+                     (TreatFormType = ttBalloonTipInAll) then
+                    (Components[TWinControl(List[i]).ComponentIndex] as TWinControl).ShowBalloonTip(TIconKind.Warning, 'Por favor, preencha este campo.', 'Campo obrigatório')
+                  else if (TreatFormType = ttPaintControlInOne) or
+                        (TreatFormType = ttPaintControlInAll) then
+                    (Components[TWinControl(List[i]).ComponentIndex] as TWinControl).SetBorder(clRed);
+
                   Result := False;
-                  Exit;
+
+                  if (TreatFormType = ttDefault) or
+                     (TreatFormType = ttBalloonTipInOne) or
+                     (TreatFormType = ttPaintControlInOne) then
+                    Exit;
                 end
                 else if not (Components[TWinControl(List[i]).ComponentIndex] as TMaskEdit).IsDate then
                 begin
-                  fBallonTip.ShowBalloonTip((Components[TWinControl(List[i]).ComponentIndex] as TMaskEdit).Handle, 'Por favor, preencha esta uma Data válida!', 'Campo obrigatório', fBallonTip.TTI_WARNING);
+                  if (TreatFormType = ttDefault) or
+                     (TreatFormType = ttBalloonTipInOne) or
+                     (TreatFormType = ttBalloonTipInAll) then
+                    (Components[TWinControl(List[i]).ComponentIndex] as TWinControl).ShowBalloonTip(TIconKind.Warning, 'Por favor, preencha esta uma Data válida!', 'Campo obrigatório')
+                  else if (TreatFormType = ttPaintControlInOne) or
+                          (TreatFormType = ttPaintControlInAll) then
+                    (Components[TWinControl(List[i]).ComponentIndex] as TWinControl).SetBorder(clRed);
+
                   Result := False;
-                  Exit;
+
+                  if (TreatFormType = ttDefault) or
+                     (TreatFormType = ttBalloonTipInOne) or
+                     (TreatFormType = ttPaintControlInOne) then
+                    Exit;
                 end
                 else
                   result := true;
@@ -933,15 +973,37 @@ begin
               begin
                 if trim((Components[TWinControl(List[i]).ComponentIndex] as TMaskEdit).Text) = '  /  /    ' then
                 begin
-                  fBallonTip.ShowBalloonTip((Components[TWinControl(List[i]).ComponentIndex] as TMaskEdit).Handle, 'Por favor, preencha esta Data!', 'Campo obrigatório', fBallonTip.TTI_WARNING);
+                  if (TreatFormType = ttDefault) or
+                     (TreatFormType = ttBalloonTipInOne) or
+                     (TreatFormType = ttBalloonTipInAll) then
+                    (Components[TWinControl(List[i]).ComponentIndex] as TWinControl).ShowBalloonTip(TIconKind.Warning, 'Por favor, preencha esta Data!', 'Campo obrigatório')
+                  else if (TreatFormType = ttPaintControlInOne) or
+                          (TreatFormType = ttPaintControlInAll) then
+                    (Components[TWinControl(List[i]).ComponentIndex] as TWinControl).SetBorder(clRed);
+
                   Result := False;
-                  Exit;
+
+                  if (TreatFormType = ttDefault) or
+                     (TreatFormType = ttBalloonTipInOne) or
+                     (TreatFormType = ttPaintControlInOne) then
+                    Exit;
                 end
                 else if not (Components[TWinControl(List[i]).ComponentIndex] as TMaskEdit).IsDate then
                 begin
-                  fBallonTip.ShowBalloonTip((Components[TWinControl(List[i]).ComponentIndex] as TMaskEdit).Handle, 'Por favor, preencha esta Data!', 'Campo obrigatório', fBallonTip.TTI_WARNING);
+                  if (TreatFormType = ttDefault) or
+                     (TreatFormType = ttBalloonTipInOne) or
+                     (TreatFormType = ttBalloonTipInAll) then
+                    (Components[TWinControl(List[i]).ComponentIndex] as TWinControl).ShowBalloonTip(TIconKind.Warning, 'Por favor, preencha esta Data!', 'Campo obrigatório')
+                  else if (TreatFormType = ttPaintControlInOne) or
+                          (TreatFormType = ttPaintControlInAll) then
+                    (Components[TWinControl(List[i]).ComponentIndex] as TWinControl).SetBorder(clRed);
+
                   Result := False;
-                  Exit;
+
+                  if (TreatFormType = ttDefault) or
+                     (TreatFormType = ttBalloonTipInOne) or
+                     (TreatFormType = ttPaintControlInOne) then
+                    Exit;
                 end
                 else
                   result := true;
@@ -951,15 +1013,37 @@ begin
               begin
                 if trim((Components[TWinControl(List[i]).ComponentIndex] as TMaskEdit).Text) = '' then
                 begin
-                  fBallonTip.ShowBalloonTip((Components[TWinControl(List[i]).ComponentIndex] as TMaskEdit).Handle, 'Por favor, preencha o CNPJ!', 'Campo obrigatório', fBallonTip.TTI_WARNING);
+                  if (TreatFormType = ttDefault) or
+                     (TreatFormType = ttBalloonTipInOne) or
+                     (TreatFormType = ttBalloonTipInAll) then
+                    (Components[TWinControl(List[i]).ComponentIndex] as TWinControl).ShowBalloonTip(TIconKind.Warning, 'Por favor, preencha o CNPJ!', 'Campo obrigatório')
+                  else if (TreatFormType = ttPaintControlInOne) or
+                          (TreatFormType = ttPaintControlInAll) then
+                    (Components[TWinControl(List[i]).ComponentIndex] as TWinControl).SetBorder(clRed);
+
                   Result := False;
-                  Exit;
+
+                  if (TreatFormType = ttDefault) or
+                     (TreatFormType = ttBalloonTipInOne) or
+                     (TreatFormType = ttPaintControlInOne) then
+                    Exit;
                 end
                 else if not (Components[TWinControl(List[i]).ComponentIndex] as TMaskEdit).IsCNPJ then
                 begin
-                  fBallonTip.ShowBalloonTip((Components[TWinControl(List[i]).ComponentIndex] as TMaskEdit).Handle, 'Por favor, preencha um CNPJ válido!', 'Campo obrigatório', fBallonTip.TTI_WARNING);
+                  if (TreatFormType = ttDefault) or
+                     (TreatFormType = ttBalloonTipInOne) or
+                     (TreatFormType = ttBalloonTipInAll) then
+                    (Components[TWinControl(List[i]).ComponentIndex] as TWinControl).ShowBalloonTip(TIconKind.Warning, 'Por favor, preencha um CNPJ válido!', 'Campo obrigatório')
+                  else if (TreatFormType = ttPaintControlInOne) or
+                          (TreatFormType = ttPaintControlInAll) then
+                    (Components[TWinControl(List[i]).ComponentIndex] as TWinControl).SetBorder(clRed);
+
                   Result := False;
-                  Exit;
+
+                  if (TreatFormType = ttDefault) or
+                     (TreatFormType = ttBalloonTipInOne) or
+                     (TreatFormType = ttPaintControlInOne) then
+                    Exit;
                 end
                 else
                   result := true;
@@ -969,15 +1053,37 @@ begin
               begin
                 if trim((Components[TWinControl(List[i]).ComponentIndex] as TMaskEdit).Text) = '' then
                 begin
-                  fBallonTip.ShowBalloonTip((Components[TWinControl(List[i]).ComponentIndex] as TMaskEdit).Handle, 'Por favor, preencha o CPF!', 'Campo obrigatório', fBallonTip.TTI_WARNING);
+                  if (TreatFormType = ttDefault) or
+                     (TreatFormType = ttBalloonTipInOne) or
+                     (TreatFormType = ttBalloonTipInAll) then
+                    (Components[TWinControl(List[i]).ComponentIndex] as TWinControl).ShowBalloonTip(TIconKind.Warning, 'Por favor, preencha o CPF!', 'Campo obrigatório')
+                  else if (TreatFormType = ttPaintControlInOne) or
+                          (TreatFormType = ttPaintControlInAll) then
+                    (Components[TWinControl(List[i]).ComponentIndex] as TWinControl).SetBorder(clRed);
+
                   Result := False;
-                  Exit;
+
+                  if (TreatFormType = ttDefault) or
+                     (TreatFormType = ttBalloonTipInOne) or
+                     (TreatFormType = ttPaintControlInOne) then
+                    Exit;
                 end
                 else if not (Components[TWinControl(List[i]).ComponentIndex] as TMaskEdit).IsCPF then
                 begin
-                  fBallonTip.ShowBalloonTip((Components[TWinControl(List[i]).ComponentIndex] as TMaskEdit).Handle, 'Por favor, preencha um CPF válido!', 'Campo obrigatório', fBallonTip.TTI_WARNING);
+                  if (TreatFormType = ttDefault) or
+                     (TreatFormType = ttBalloonTipInOne) or
+                     (TreatFormType = ttBalloonTipInAll) then
+                    (Components[TWinControl(List[i]).ComponentIndex] as TWinControl).ShowBalloonTip(TIconKind.Warning, 'Por favor, preencha um CPF válido!', 'Campo obrigatório')
+                  else if (TreatFormType = ttPaintControlInOne) or
+                          (TreatFormType = ttPaintControlInAll) then
+                    (Components[TWinControl(List[i]).ComponentIndex] as TWinControl).SetBorder(clRed);
+
                   Result := False;
-                  Exit;
+
+                  if (TreatFormType = ttDefault) or
+                     (TreatFormType = ttBalloonTipInOne) or
+                     (TreatFormType = ttPaintControlInOne) then
+                    Exit;
                 end
                 else
                   result := true;
@@ -987,15 +1093,37 @@ begin
               begin
                 if trim((Components[TWinControl(List[i]).ComponentIndex] as TMaskEdit).Text) = '' then
                 begin
-                  fBallonTip.ShowBalloonTip((Components[TWinControl(List[i]).ComponentIndex] as TMaskEdit).Handle, 'Por favor, preencha o CEP!', 'Campo obrigatório', fBallonTip.TTI_WARNING);
+                  if (TreatFormType = ttDefault) or
+                     (TreatFormType = ttBalloonTipInOne) or
+                     (TreatFormType = ttBalloonTipInAll) then
+                    (Components[TWinControl(List[i]).ComponentIndex] as TWinControl).ShowBalloonTip(TIconKind.Warning, 'Por favor, preencha o CEP!', 'Campo obrigatório')
+                  else if (TreatFormType = ttPaintControlInOne) or
+                          (TreatFormType = ttPaintControlInAll) then
+                    (Components[TWinControl(List[i]).ComponentIndex] as TWinControl).SetBorder(clRed);
+
                   Result := False;
-                  Exit;
+
+                  if (TreatFormType = ttDefault) or
+                     (TreatFormType = ttBalloonTipInOne) or
+                     (TreatFormType = ttPaintControlInOne) then
+                    Exit;
                 end
                 else if not (Components[TWinControl(List[i]).ComponentIndex] as TMaskEdit).IsCep then
                 begin
-                  fBallonTip.ShowBalloonTip((Components[TWinControl(List[i]).ComponentIndex] as TMaskEdit).Handle, 'Por favor, preencha um CEP válido!', 'Campo obrigatório', fBallonTip.TTI_WARNING);
+                  if (TreatFormType = ttDefault) or
+                     (TreatFormType = ttBalloonTipInOne) or
+                     (TreatFormType = ttBalloonTipInAll) then
+                    (Components[TWinControl(List[i]).ComponentIndex] as TWinControl).ShowBalloonTip(TIconKind.Warning, 'Por favor, preencha um CEP válido!', 'Campo obrigatório')
+                  else if (TreatFormType = ttPaintControlInOne) or
+                          (TreatFormType = ttPaintControlInAll) then
+                    (Components[TWinControl(List[i]).ComponentIndex] as TWinControl).SetBorder(clRed);
+
                   Result := False;
-                  Exit;
+
+                  if (TreatFormType = ttDefault) or
+                     (TreatFormType = ttBalloonTipInOne) or
+                     (TreatFormType = ttPaintControlInOne) then
+                    Exit;
                 end
                 else
                   result := true;
@@ -1005,9 +1133,20 @@ begin
               begin
                 if trim((Components[TWinControl(List[i]).ComponentIndex] as TMaskEdit).Text) = '' then
                 begin
-                  fBallonTip.ShowBalloonTip((Components[TWinControl(List[i]).ComponentIndex] as TMaskEdit).Handle, 'Por favor, preencha este campo!', 'Campo obrigatório', fBallonTip.TTI_WARNING);
+                  if (TreatFormType = ttDefault) or
+                     (TreatFormType = ttBalloonTipInOne) or
+                     (TreatFormType = ttBalloonTipInAll) then
+                  (Components[TWinControl(List[i]).ComponentIndex] as TWinControl).ShowBalloonTip(TIconKind.Warning, 'Por favor, preencha este campo!', 'Campo obrigatório')
+                  else if (TreatFormType = ttPaintControlInOne) or
+                          (TreatFormType = ttPaintControlInAll) then
+                    (Components[TWinControl(List[i]).ComponentIndex] as TWinControl).SetBorder(clRed);
+
                   Result := False;
-                  Exit;
+
+                  if (TreatFormType = ttDefault) or
+                     (TreatFormType = ttBalloonTipInOne) or
+                     (TreatFormType = ttPaintControlInOne) then
+                    Exit;
                 end
                 else
                   result := true;
@@ -1018,15 +1157,20 @@ begin
             begin
               if (Components[TWinControl(List[i]).ComponentIndex] as TComboBox).ItemIndex < 0 then
               begin
-                if (Components[TWinControl(List[i]).ComponentIndex] as TComboBox).TextHint <> '' then
-                  MessageDlg('Por favor, selecione '+(Components[TWinControl(List[i]).ComponentIndex] as TComboBox).TextHint+' item!', mtWarning, [mbOK], 0)
-                else
-                  MessageDlg('Por favor, selecione algum item!', mtWarning, [mbOK], 0);
+                  if (TreatFormType = ttDefault) or
+                     (TreatFormType = ttBalloonTipInOne) or
+                     (TreatFormType = ttBalloonTipInAll) then
+                  (Components[TWinControl(List[i]).ComponentIndex] as TWinControl).ShowBalloonTip(TIconKind.Warning, 'Por favor, selecione algum item.!', 'Campo obrigatório')
+                  else if (TreatFormType = ttPaintControlInOne) or
+                          (TreatFormType = ttPaintControlInAll) then
+                    (Components[TWinControl(List[i]).ComponentIndex] as TWinControl).SetBorder(clRed);
 
-                (Components[TWinControl(List[i]).ComponentIndex] as TComboBox).SetFocus;
-                //fBallonTip.ShowBalloonTip((Components[TWinControl(List[i]).ComponentIndex] as TComboBox).Handle, 'Por favor, selecione algum item.', 'Campo com item inválido', fBallonTip.TTI_WARNING);
                 Result := False;
-                Exit;
+
+                if (TreatFormType = ttDefault) or
+                   (TreatFormType = ttBalloonTipInOne) or
+                   (TreatFormType = ttPaintControlInOne) then
+                  Exit;
               end
               else
                 result := true;
@@ -1041,35 +1185,8 @@ begin
 end;
 
 procedure TFormHelper.TreatTabOrder;
-var
-  i, Cont: Integer;
-  List: TList;
 begin
-  List := TList.Create;
-  try
-    for i := 0 to ControlCount - 1 do
-    begin
-      if Controls[i] is TWinControl then
-      begin
-        if List.Count = 0 then
-          Cont := 0
-        else
-        begin
-          with Controls[i] do
-            for Cont := 0 to List.Count - 1 do
-              if (Top < TControl(List[Cont]).Top) or
-                 ((Top = TControl(List[Cont]).Top) and (Left < TControl(List[Cont]).Left)) then
-                Break;
-        end;
-        List.Insert(Cont, Controls[i]);
-        TreatTabOrder(TWinControl(Controls[i]));
-      end;
-    end;
-
-    for i := 0 to List.Count - 1 do TWinControl(List[i]).TabOrder := i;
-  finally
-    List.Free;
-  end;
+  TreatTabOrder(Self);
 end;
 
 procedure TFormHelper.TreatTabOrder(const Parent: TWinControl);
@@ -1094,7 +1211,7 @@ begin
                 Break;
         end;
         List.Insert(Cont, Parent.Controls[i]);
-        TreatTabOrder(TWinControl(Self.Controls[i]));
+        TreatTabOrder(TWinControl(Parent.Controls[i]));
       end;
     end;
 

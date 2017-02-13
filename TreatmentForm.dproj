@@ -5,7 +5,7 @@
         <FrameworkType>VCL</FrameworkType>
         <MainSource>TreatmentForm.dpr</MainSource>
         <Base>True</Base>
-        <Config Condition="'$(Config)'==''">Debug</Config>
+        <Config Condition="'$(Config)'==''">Release</Config>
         <Platform Condition="'$(Platform)'==''">Win32</Platform>
         <TargetedPlatforms>1</TargetedPlatforms>
         <AppType>Application</AppType>
@@ -15,11 +15,6 @@
     </PropertyGroup>
     <PropertyGroup Condition="('$(Platform)'=='Win32' and '$(Base)'=='true') or '$(Base_Win32)'!=''">
         <Base_Win32>true</Base_Win32>
-        <CfgParent>Base</CfgParent>
-        <Base>true</Base>
-    </PropertyGroup>
-    <PropertyGroup Condition="('$(Platform)'=='Win64' and '$(Base)'=='true') or '$(Base_Win64)'!=''">
-        <Base_Win64>true</Base_Win64>
         <CfgParent>Base</CfgParent>
         <Base>true</Base>
     </PropertyGroup>
@@ -53,19 +48,14 @@
     </PropertyGroup>
     <PropertyGroup Condition="'$(Base_Win32)'!=''">
         <AppEnableRuntimeThemes>true</AppEnableRuntimeThemes>
-        <UWP_DelphiLogo44>$(BDS)\bin\Artwork\Windows\UWP\delphi_UwpDefault_44.png</UWP_DelphiLogo44>
         <UWP_DelphiLogo150>$(BDS)\bin\Artwork\Windows\UWP\delphi_UwpDefault_150.png</UWP_DelphiLogo150>
+        <UWP_DelphiLogo44>$(BDS)\bin\Artwork\Windows\UWP\delphi_UwpDefault_44.png</UWP_DelphiLogo44>
         <DCC_Namespace>Winapi;System.Win;Data.Win;Datasnap.Win;Web.Win;Soap.Win;Xml.Win;Bde;$(DCC_Namespace)</DCC_Namespace>
         <VerInfo_Keys>CompanyName=;FileVersion=1.0.0.0;InternalName=;LegalCopyright=;LegalTrademarks=;OriginalFilename=;ProductVersion=1.0.0.0;Comments=;ProgramID=com.embarcadero.$(ModuleName);FileDescription=$(ModuleName);ProductName=$(ModuleName)</VerInfo_Keys>
         <DCC_UsePackage>JvGlobus;hclcore_xe5;JvMM;JvManagedThreads;dxSpreadSheetRS19;htmledit_xe5;FireDACPgDriver;office2010rt;JvCrypt;TMSCloudPkgDXE7;frx19;dxThemeRS19;DBXInterBaseDriver;DataSnapServer;DataSnapCommon;JvNet;JvDotNetCtrls;DbxCommonDriver;vclimg;dbxcds;DatasnapConnectorsFreePascal;rbADO1519;JvXPCtrls;rbFireDAC1519;vcldb;dxRibbonCustomizationFormRS19;LockBox;rbTCUI1519;CustomIPTransport;rbBDE1519;dsnap;IndyIPServer;IndyCore;CloudService;FmxTeeUI;FireDACIBDriver;TMSCloudPkgDED10Seatle;htmleditfm_xe5;htmlreports_xe5;JvDB;JvRuntimeDesign;dclRBE1519;rbCIDE1519;dclRBDBE1519;frxe19;JclDeveloperTools;FireDACDb2Driver;dxBarExtDBItemsRS19;dxTabbedMDIRS19;frxDB19;bindcompfmx;vcl.gtxDBControlsDXE5;vcldbx;cxExportRS19;FireDACODBCDriver;rbUSERDesign1519;rbRAP1519;htmlcomp_xe5;dbrtl;FireDACCommon;bindcomp;inetdb;dxHttpIndyRequestRS19;JvPluginSystem;dxServerModeRS19;DBXOdbcDriver;JvCmp;vclFireDAC;JvTimeFramework;xmlrtl;ibxpress;FireDACCommonDriver;bindengine;vclactnband;soaprtl;FMXTee;ACBrComum;synapse;bindcompvcl;dxADOServerModeRS19;dxRibbonRS19;Jcl;vclie;ACBr_TEFD;RLibWinDXE5;vcl.gtxControlsDXE5;FireDACMSSQLDriver;DBXInformixDriver;Intraweb;ZipMasterR;dsnapcon;DBXFirebirdDriver;PCN2;inet;JvPascalInterpreter;FireDACMySQLDriver;vclx;rbDB1519;DBXSybaseASADriver;RESTComponents;dbexpress;JvBDE;IndyIPClient;ACBr_BoletoFC_Fortes;SynEditR;FireDACSqliteDriver;rbUSER1519;ZComponent;DBXSqliteDriver;ACBrDiversos;SampleListViewMultiDetailAppearancePackage;ACBrTCP;cxDataRS19;cxLibraryRS19;fmx;JvDlgs;IndySystem;TeeDB;vclib;inetdbbde;DataSnapClient;DataSnapProviderClient;DBXSybaseASEDriver;rbDIDE1519;rbIBE1519;Vcl.gtxStdCtrlsDXE5;MetropolisUILiveTile;vcldsnap;fmxFireDAC;DBXDb2Driver;rbIDE1519;DBXOracleDriver;dxBarDBNavRS19;JvCore;vclribbon;fmxase;vcl;DCEF_XE5;IndyIPCommon;DBXMSSQLDriver;CodeSiteExpressPkg;dxBarRS19;ACBr_Boleto;cxTreeListdxBarPopupMenuRS19;FireDACDBXDriver;JvAppFrm;dxFireDACServerModeRS19;inetdbxpress;ACBr_NFSe;cxEditorsRS19;JvDocking;adortl;JvWizards;FireDACASADriver;JvHMI;dxDBXServerModeRS19;ACBrOpenSSL;dxLayoutControlRS19;JvBands;dclRBIBE1519;cxPageControlRS19;ACBrCapicom;ZDbc;rtl;rbDBDE1519;DbxClientDriver;ACBrSerial;ZPlain;Tee;JclContainers;CPortLibDXE;JvSystem;ACBrNFSeDanfseRLpkg;svnui;JvControls;dxComnRS19;IndyProtocols;DBXMySQLDriver;bindcompdbx;TeeUI;JvJans;JvPrintPreview;JvPageComps;rbDAD1519;JvStdCtrls;JvCustom;htmlcompfm_xe5;dxBarExtItemsRS19;FireDACADSDriver;vcltouch;ZCore;dxNavBarRS19;rbTC1519;vcl.gtxReportExportDXE5;VclSmp;FireDAC;VCLRESTComponents;rbDBE1519;dxGDIPlusRS19;dclRBFireDAC1519;DataSnapConnectors;FireDACDataSnapDriver;dclRBADO1519;dxCoreRS19;rbRCL1519;fmxobj;JclVcl;htmleditcore_xe5;ZParseSql;svn;FireDACOracleDriver;fmxdae;rbRIDE1519;bdertl;VirtualTreesR;dclRBBDE1519;cxTreeListRS19;FireDACMSAccDriver;DataSnapIndy10ServerTransport;$(DCC_UsePackage)</DCC_UsePackage>
         <VerInfo_Locale>1033</VerInfo_Locale>
         <VerInfo_IncludeVerInfo>true</VerInfo_IncludeVerInfo>
         <Manifest_File>$(BDS)\bin\default_app.manifest</Manifest_File>
-    </PropertyGroup>
-    <PropertyGroup Condition="'$(Base_Win64)'!=''">
-        <UWP_DelphiLogo44>$(BDS)\bin\Artwork\Windows\UWP\delphi_UwpDefault_44.png</UWP_DelphiLogo44>
-        <UWP_DelphiLogo150>$(BDS)\bin\Artwork\Windows\UWP\delphi_UwpDefault_150.png</UWP_DelphiLogo150>
-        <DCC_UsePackage>hclcore_xe5;dxSpreadSheetRS19;htmledit_xe5;FireDACPgDriver;office2010rt;TMSCloudPkgDXE7;dxThemeRS19;DBXInterBaseDriver;DataSnapServer;DataSnapCommon;DbxCommonDriver;vclimg;dbxcds;DatasnapConnectorsFreePascal;vcldb;dxRibbonCustomizationFormRS19;CustomIPTransport;dsnap;IndyIPServer;IndyCore;CloudService;FmxTeeUI;FireDACIBDriver;htmleditfm_xe5;FireDACDb2Driver;dxBarExtDBItemsRS19;dxTabbedMDIRS19;bindcompfmx;cxExportRS19;FireDACODBCDriver;htmlcomp_xe5;dbrtl;FireDACCommon;bindcomp;inetdb;dxHttpIndyRequestRS19;dxServerModeRS19;DBXOdbcDriver;vclFireDAC;xmlrtl;ibxpress;FireDACCommonDriver;bindengine;vclactnband;soaprtl;FMXTee;bindcompvcl;dxADOServerModeRS19;dxRibbonRS19;vclie;FireDACMSSQLDriver;DBXInformixDriver;Intraweb;ZipMasterR;dsnapcon;DBXFirebirdDriver;inet;FireDACMySQLDriver;vclx;DBXSybaseASADriver;RESTComponents;dbexpress;IndyIPClient;FireDACSqliteDriver;ZComponent;DBXSqliteDriver;cxDataRS19;cxLibraryRS19;fmx;IndySystem;TeeDB;vclib;DataSnapClient;DataSnapProviderClient;DBXSybaseASEDriver;MetropolisUILiveTile;vcldsnap;fmxFireDAC;DBXDb2Driver;DBXOracleDriver;dxBarDBNavRS19;vclribbon;fmxase;vcl;IndyIPCommon;DBXMSSQLDriver;dxBarRS19;cxTreeListdxBarPopupMenuRS19;FireDACDBXDriver;dxFireDACServerModeRS19;inetdbxpress;cxEditorsRS19;adortl;FireDACASADriver;dxDBXServerModeRS19;dxLayoutControlRS19;cxPageControlRS19;ZDbc;rtl;DbxClientDriver;ZPlain;Tee;dxComnRS19;IndyProtocols;DBXMySQLDriver;bindcompdbx;TeeUI;htmlcompfm_xe5;dxBarExtItemsRS19;FireDACADSDriver;vcltouch;ZCore;dxNavBarRS19;VclSmp;FireDAC;VCLRESTComponents;dxGDIPlusRS19;DataSnapConnectors;FireDACDataSnapDriver;dxCoreRS19;fmxobj;ZParseSql;FireDACOracleDriver;fmxdae;cxTreeListRS19;FireDACMSAccDriver;DataSnapIndy10ServerTransport;$(DCC_UsePackage)</DCC_UsePackage>
     </PropertyGroup>
     <PropertyGroup Condition="'$(Cfg_1)'!=''">
         <DCC_Define>DEBUG;$(DCC_Define)</DCC_Define>
@@ -91,14 +81,12 @@
         <DelphiCompile Include="$(MainSource)">
             <MainSource>MainSource</MainSource>
         </DelphiCompile>
-        <DCCReference Include="UBaseForm.pas">
-            <Form>fBaseForm</Form>
-            <FormType>dfm</FormType>
-        </DCCReference>
         <DCCReference Include="UUseMode.pas">
             <Form>fUseMode</Form>
             <FormType>dfm</FormType>
         </DCCReference>
+        <DCCReference Include="UTips.pas"/>
+        <DCCReference Include="RRClass.pas"/>
         <BuildConfiguration Include="Release">
             <Key>Cfg_2</Key>
             <CfgParent>Base</CfgParent>
@@ -177,27 +165,12 @@
                         <Overwrite>true</Overwrite>
                     </Platform>
                 </DeployFile>
-                <DeployClass Name="DependencyModule">
-                    <Platform Name="Win32">
-                        <Operation>0</Operation>
-                        <Extensions>.dll;.bpl</Extensions>
-                    </Platform>
+                <DeployClass Name="ProjectiOSDeviceResourceRules">
                     <Platform Name="iOSDevice64">
                         <Operation>1</Operation>
-                        <Extensions>.dylib</Extensions>
-                    </Platform>
-                    <Platform Name="OSX32">
-                        <RemoteDir>Contents\MacOS</RemoteDir>
-                        <Operation>1</Operation>
-                        <Extensions>.dylib</Extensions>
                     </Platform>
                     <Platform Name="iOSDevice32">
                         <Operation>1</Operation>
-                        <Extensions>.dylib</Extensions>
-                    </Platform>
-                    <Platform Name="iOSSimulator">
-                        <Operation>1</Operation>
-                        <Extensions>.dylib</Extensions>
                     </Platform>
                 </DeployClass>
                 <DeployClass Name="ProjectOSXResource">
@@ -576,12 +549,27 @@
                         <Operation>1</Operation>
                     </Platform>
                 </DeployClass>
-                <DeployClass Name="ProjectiOSDeviceResourceRules">
+                <DeployClass Name="DependencyModule">
+                    <Platform Name="Win32">
+                        <Operation>0</Operation>
+                        <Extensions>.dll;.bpl</Extensions>
+                    </Platform>
                     <Platform Name="iOSDevice64">
                         <Operation>1</Operation>
+                        <Extensions>.dylib</Extensions>
+                    </Platform>
+                    <Platform Name="OSX32">
+                        <RemoteDir>Contents\MacOS</RemoteDir>
+                        <Operation>1</Operation>
+                        <Extensions>.dylib</Extensions>
                     </Platform>
                     <Platform Name="iOSDevice32">
                         <Operation>1</Operation>
+                        <Extensions>.dylib</Extensions>
+                    </Platform>
+                    <Platform Name="iOSSimulator">
+                        <Operation>1</Operation>
+                        <Extensions>.dylib</Extensions>
                     </Platform>
                 </DeployClass>
                 <ProjectRoot Platform="iOSDevice64" Name="$(PROJECTNAME).app"/>
@@ -595,7 +583,6 @@
             </Deployment>
             <Platforms>
                 <Platform value="Win32">True</Platform>
-                <Platform value="Win64">False</Platform>
             </Platforms>
         </BorlandProject>
         <ProjectFileVersion>12</ProjectFileVersion>
