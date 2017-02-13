@@ -39,9 +39,9 @@ type
       FadeOut: TTimer;
     procedure FadeInTimer(Sender : TObject);
     procedure FadeOutTimer(Sender : TObject);
-    procedure FormShow(Sender : TObject);
-    procedure FormKeyDown(Sender: TObject; var Key: Word; Shift: TShiftState);
-    procedure FormClose(Sender: TObject; var Action: TCloseAction);
+    procedure DoShow; override;
+    procedure KeyDown(var Key: Word; Shift: TShiftState); override;
+    procedure DoClose(var Action: TCloseAction); override;
   public
     constructor Create(AOwner : TComponent); override;
     destructor Destroy; override;
@@ -49,7 +49,7 @@ type
   end;
 
 type
-  TDBGrid = Class(Vcl.DBGrids.TDBGrid)
+  TDBGrid = class(Vcl.DBGrids.TDBGrid)
   strict private
     constructor Create(AOwner: TComponent);override;
     destructor Destroy;override;
@@ -372,15 +372,6 @@ begin
     Close;
 end;
 
-procedure TfObject.FormClose(Sender: TObject; var Action: TCloseAction);
-begin
-  while AlphaBlendValue <> 0 do
-  begin
-    FadeOut.Enabled := true;
-    Application.ProcessMessages;
-  end;
-end;
-
 constructor TfObject.Create(AOwner : TComponent);
 begin
   inherited Create(AOwner);
@@ -400,9 +391,6 @@ begin
   FadeIn.Enabled := false;
   FadeOut.Enabled := false;
 
-  OnShow := FormShow;
-  OnKeyDown := FormKeyDown;
-  OnClose := FormClose;
   FadeIn.OnTimer := FadeInTimer;
   FadeOut.OnTimer := FadeOutTimer;
 end;
@@ -415,18 +403,33 @@ begin
   inherited Destroy;
 end;
 
-procedure TfObject.FormKeyDown(Sender: TObject; var Key: Word;
-  Shift: TShiftState);
+procedure TfObject.DoClose(var Action: TCloseAction);
 begin
+  while AlphaBlendValue <> 0 do
+  begin
+    FadeOut.Enabled := true;
+    Application.ProcessMessages;
+  end;
+
+  inherited;
+end;
+
+procedure TfObject.KeyDown(var Key: Word; Shift: TShiftState);
+begin
+  inherited;
+
   case key of
     VK_ESCAPE : Close;
     VK_RETURN : perform(WM_NEXTDLGCTL,0,0);
   end;
 end;
 
-procedure TfObject.FormShow(Sender: TObject);
+procedure TfObject.DoShow;
 begin
   TreatTabOrder;
+
+  inherited;
+
   FadeIn.Enabled := true;
 end;
 
